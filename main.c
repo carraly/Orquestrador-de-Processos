@@ -10,7 +10,7 @@ int main(){
     char* token;
     while ((strcmp(comando, "exit") != 0)) {
         printf("processflow> ");
-        scanf("%s", comando);
+        fgets(comando, sizeof(comando), stdin);
 
         token = strtok(comando, " ");
 
@@ -21,7 +21,27 @@ int main(){
                 if (pid < 0) {
                     perror("fork failed");
                 }else if (pid == 0) {
-                    execvp(const char *file, char *const *argv);
+                    int cont = 0;
+
+                    while (token != NULL) {
+                        cont++;
+                        token = strtok(NULL, " ");
+                    }
+
+                    char *args[cont+1];
+                    args[cont+1] = NULL;
+                    cont = 0;
+
+                    token = strtok(comando, " ");
+                    token = strtok(NULL, " ");
+                    // Descartar primeiro
+
+                    while (token != NULL) {
+                        token = strtok(NULL, " ");
+                        args[cont] = token;
+                        cont++;
+                    }
+                    execvp(args[0], args);
                 }else {
                     int status;
 
