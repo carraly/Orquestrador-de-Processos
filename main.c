@@ -5,17 +5,73 @@
 #include <sys/types.h>
 #include <sys/wait.h>
 
+typedef struct Comando{
+    char nome[20];
+    char programa[20];
+    char** args;
+    struct Comando *next;
+} Comando;
+
+void adicionar_comando(Comando** lista, char programa[], char** args){
+    if (lista == NULL){
+        (*lista) = (Comando*) malloc(sizeof(Comando));
+    }else {
+        while ((*lista)->next != NULL) {
+            (*lista) = (*lista)->next;
+        }
+
+        (*lista)->next = (Comando*) malloc(sizeof(Comando));
+        (*lista) = (*lista)->next;
+    }
+
+    strcpy((*lista)->programa, programa);
+    (*lista)->args = args;
+    (*lista)->next = NULL;
+}
+
 int main(){
+    Comando* lista_comandos = NULL;
     char comando[50] = "";
     char* token;
     while ((strcmp(comando, "exit") != 0)) {
         printf("processflow> ");
         fgets(comando, sizeof(comando), stdin);
 
-        token = strtok(comando, " ");
+        token = strtok(comando, " \n");
 
         while (token != NULL) {
             if (strcmp(token, "task") == 0) {
+                int cont = 0;
+
+                while (token != NULL) {
+                    cont++;
+                    token = strtok(NULL, " \n");
+                }
+
+                char nome[20];
+                char programa[20];
+                char *args[cont+1];
+                args[cont] = NULL;
+                cont = 0;
+
+                token = strtok(comando, "\0");
+                // Separações na string original são substituidas por \0 pelo strtok
+
+                while (token != NULL) {
+                    token = strtok(NULL, "\0");
+                    // Agora sim descarta só o primeiro
+                    if (cont == 0){
+                        strcpy(nome, token);
+                    }else if (cont == 1) {
+                        strcpy(programa, token);
+                    }else{
+                        args[cont-2] = token;
+                    } 
+                    cont++;
+                }
+                                    
+                adicionar_comando(&lista_comandos, programa, args);
+            }else if (strcmp(token, "run") == 0) {
                 pid_t pid = fork();
 
                 if (pid < 0) {
@@ -25,23 +81,25 @@ int main(){
 
                     while (token != NULL) {
                         cont++;
-                        token = strtok(NULL, " ");
+                        token = strtok(NULL, " \n");
                     }
 
                     char *args[cont+1];
-                    args[cont+1] = NULL;
+                    args[cont] = NULL;
                     cont = 0;
 
-                    token = strtok(comando, " ");
-                    token = strtok(NULL, " ");
-                    // Descartar primeiro
+                    token = strtok(comando, "\0");
+                    // Separações na string original são substituidas por \0 pelo strtok
 
                     while (token != NULL) {
-                        token = strtok(NULL, " ");
+                        token = strtok(NULL, "\0");
+                        // Agora sim descarta só o primeiro
                         args[cont] = token;
                         cont++;
                     }
+
                     execvp(args[0], args);
+
                 }else {
                     int status;
 
