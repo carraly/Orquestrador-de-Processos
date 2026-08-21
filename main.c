@@ -42,36 +42,36 @@ int main(){
 
         while (token != NULL) {
             if (strcmp(token, "task") == 0) {
+                
                 int cont = 0;
-
-                while (token != NULL) {
-                    cont++;
-                    token = strtok(NULL, " \n");
-                }
-
                 char nome[20];
                 char programa[20];
-                char *args[cont+1];
-                args[cont] = NULL;
-                cont = 0;
+                char **args = (char**) malloc(20 * sizeof(char*));
 
-                token = strtok(comando, "\0");
-                // Separações na string original são substituidas por \0 pelo strtok
+                token = strtok(NULL, " ");
+                // Agora sim descarta só o primeiro
 
                 while (token != NULL) {
-                    token = strtok(NULL, "\0");
-                    // Agora sim descarta só o primeiro
                     if (cont == 0){
                         strcpy(nome, token);
                     }else if (cont == 1) {
                         strcpy(programa, token);
                     }else{
-                        args[cont-2] = token;
-                    } 
+                        args[cont-2] = (char*) malloc(20 * sizeof(char));
+                        strcpy(args[cont-2], token);
+                    }
+                    token = strtok(NULL, " ");
                     cont++;
                 }
 
+                if (cont >= 2) {
+                    args[cont-2] = NULL;
+                }else {
+                    args[0] = NULL;
+                }
+
                 adicionar_comando(&lista_comandos, nome, programa, args);
+
             }else if (strcmp(token, "run") == 0) {
                 pid_t pid = fork();
 
