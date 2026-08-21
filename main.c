@@ -12,7 +12,7 @@ typedef struct Comando{
     struct Comando *next;
 } Comando;
 
-void adicionar_comando(Comando** lista, char programa[], char** args){
+void adicionar_comando(Comando** lista, char nome[], char programa[], char** args){
     if (lista == NULL){
         (*lista) = (Comando*) malloc(sizeof(Comando));
     }else {
@@ -24,6 +24,7 @@ void adicionar_comando(Comando** lista, char programa[], char** args){
         (*lista) = (*lista)->next;
     }
 
+    strcpy((*lista)->nome, nome);
     strcpy((*lista)->programa, programa);
     (*lista)->args = args;
     (*lista)->next = NULL;
@@ -69,8 +70,8 @@ int main(){
                     } 
                     cont++;
                 }
-                                    
-                adicionar_comando(&lista_comandos, programa, args);
+
+                adicionar_comando(&lista_comandos, nome, programa, args);
             }else if (strcmp(token, "run") == 0) {
                 pid_t pid = fork();
 
