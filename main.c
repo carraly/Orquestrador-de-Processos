@@ -7,13 +7,12 @@
 
 typedef struct Comando{
     char nome[20];
-    char programa[20];
-    char** args;
+    char** args; // Lembrar que arg[0] é o endereço
     struct Comando *next;
 } Comando;
 
-void adicionar_comando(Comando** lista, char nome[], char programa[], char** args){
-    if (lista == NULL){
+void adicionar_comando(Comando** lista, char nome[], char** args){
+    if (*lista == NULL){
         (*lista) = (Comando*) malloc(sizeof(Comando));
     }else {
         while ((*lista)->next != NULL) {
@@ -25,7 +24,6 @@ void adicionar_comando(Comando** lista, char nome[], char programa[], char** arg
     }
 
     strcpy((*lista)->nome, nome);
-    strcpy((*lista)->programa, programa);
     (*lista)->args = args;
     (*lista)->next = NULL;
 }
@@ -45,7 +43,6 @@ int main(){
                 
                 int cont = 0;
                 char nome[20];
-                char programa[20];
                 char **args = (char**) malloc(20 * sizeof(char*));
 
                 token = strtok(NULL, " ");
@@ -54,65 +51,81 @@ int main(){
                 while (token != NULL) {
                     if (cont == 0){
                         strcpy(nome, token);
-                    }else if (cont == 1) {
-                        strcpy(programa, token);
                     }else{
-                        args[cont-2] = (char*) malloc(20 * sizeof(char));
-                        strcpy(args[cont-2], token);
+                        args[cont-1] = (char*) malloc(20 * sizeof(char));
+                        strcpy(args[cont-1], token);
                     }
                     token = strtok(NULL, " ");
                     cont++;
                 }
 
-                if (cont >= 2) {
-                    args[cont-2] = NULL;
-                }else {
-                    args[0] = NULL;
-                }
+                if (cont < 2) {
+                        perror("invalid task");
+                        continue;
+                    }
 
-                adicionar_comando(&lista_comandos, nome, programa, args);
+                args[cont-1] = NULL;
+
+                adicionar_comando(&lista_comandos, nome, args);
 
             }else if (strcmp(token, "run") == 0) {
-                pid_t pid = fork();
 
-                if (pid < 0) {
-                    perror("fork failed");
-                }else if (pid == 0) {
-                    int cont = 0;
+                int cont = 0;
+                char **comandos = (char**) malloc(20 * sizeof(char*));
 
-                    while (token != NULL) {
-                        cont++;
-                        token = strtok(NULL, " \n");
-                    }
+                token = strtok(NULL, " ");
+                // Agora sim descarta só o primeiro
 
-                    char *args[cont+1];
-                    args[cont] = NULL;
-                    cont = 0;
+                while (token != NULL) {
+                    comandos[cont] = (char*) malloc(20 * sizeof(char));
+                    strcpy(comandos[cont], token);
+                    token = strtok(NULL, " ");
+                    cont++;
+                }
 
-                    token = strtok(comando, "\0");
-                    // Separações na string original são substituidas por \0 pelo strtok
+                if (cont < 1) {
+                    perror("invalid task");
+                    exit(5);
+                }
 
-                    while (token != NULL) {
-                        token = strtok(NULL, "\0");
-                        // Agora sim descarta só o primeiro
-                        args[cont] = token;
-                        cont++;
-                    }
+                comandos[cont] = NULL;
 
-                    execvp(args[0], args);
+                if (strcmp(comandos[0], "sequential") == 0) {
+                    executar_sequencial(comandos);
+                    
+                }else if (strcmp(comandos[0], "parallel") == 0) {
+                    executar_paralelo(comandos);
 
                 }else {
-                    int status;
+                    pid_t pid = fork();
+                    if (pid < 0) {
+                        perror("fork failed");
 
-                    waitpid(pid, &status, 0);
+                    }else if (pid == 0) {
+                        Comando* temp = lista_comandos;
+                        while (temp != NULL) {
+                            if (strcmp(temp->nome, comandos[0]) == 0) {
+                                execvp(temp->args[0], temp->args);
+                                perror("program not found");
+                                exit(4);
+                            }
+                            temp = temp->next;
+                        }
+                        perror("invalid command");
+                        exit(2);
+                    }else {
+                        token = NULL;
+                        int status;
 
-                    if (WIFEXITED(status)){
-                        int codigo = WEXITSTATUS(status);
-                        printf("Tarefa terminou com código %d\n", codigo);
+                        waitpid(pid, &status, 0);
+
+                        if (WIFEXITED(status)){
+                            int codigo = WEXITSTATUS(status);
+                            printf("Tarefa terminou com código %d\n", codigo);
+                        }
                     }
                 }
             }
-            token = strtok(NULL, " ");
         }
     }
     return 0;
