@@ -19,13 +19,13 @@ void adicionar_comando(Comando** lista, char nome[], char** args){
 
 int main(){
     Comando* lista_comandos = NULL;
-    char comando[50] = "";
+    char input_comando[50] = "";
     char* token;
-    while ((strcmp(comando, "exit") != 0)) {
+    while ((strcmp(input_comando, "exit") != 0)) {
         printf("processflow> ");
-        fgets(comando, sizeof(comando), stdin);
+        fgets(input_comando, sizeof(input_comando), stdin);
 
-        token = strtok(comando, " \n");
+        token = strtok(input_comando, " \n");
 
         while (token != NULL) {
             if (strcmp(token, "task") == 0) {
@@ -80,10 +80,10 @@ int main(){
                 comandos[cont] = NULL;
 
                 if (strcmp(comandos[0], "sequential") == 0) {
-                    //executar_sequencial(comandos);
+                    executar_sequencial(comandos, lista_comandos);
                     
                 }else if (strcmp(comandos[0], "parallel") == 0) {
-                    //executar_paralelo(comandos);
+                    executar_paralelo(comandos, lista_comandos);
 
                 }else {
                     pid_t pid = fork();
