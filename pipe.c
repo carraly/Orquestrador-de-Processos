@@ -60,7 +60,7 @@ void executar_pipe(char **comandos, Comando *lista_comandos){
                 if (strcmp(temp->nome, comandos[cont]) == 0) {
                     execvp(temp->args[0], temp->args);
                     perror("program not found");
-                    exit(4);
+                    exit(1);
                 }
                 temp = temp->next;
             }

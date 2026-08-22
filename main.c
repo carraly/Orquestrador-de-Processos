@@ -28,8 +28,10 @@ int main(){
         token = strtok(input_comando, " \n");
 
         while (token != NULL) {
-            if (strcmp(token, "task") == 0) {
-                
+            if (strcmp(token, "exit") == 0) {
+                break;
+
+            }else if (strcmp(token, "task") == 0) {
                 int cont = 0;
                 char nome[20];
                 char **args = (char**) malloc(20 * sizeof(char*));
@@ -57,8 +59,10 @@ int main(){
 
                 adicionar_comando(&lista_comandos, nome, args);
 
-            }else if (strcmp(token, "run") == 0) {
-
+            }else {
+                char modo[20];
+                strcpy(modo, token);
+                
                 int cont = 0;
                 char **comandos = (char**) malloc(20 * sizeof(char*));
 
@@ -78,44 +82,63 @@ int main(){
                 }
 
                 comandos[cont] = NULL;
+                if (strcmp(modo, "run") == 0) {
+                    if (strcmp(comandos[0], "sequential") == 0) {
+                        executar_sequencial(comandos, lista_comandos);
+                        
+                    }else if (strcmp(comandos[0], "parallel") == 0) {
+                        executar_paralelo(comandos, lista_comandos);
 
-                if (strcmp(comandos[0], "sequential") == 0) {
-                    executar_sequencial(comandos, lista_comandos);
-                    
-                }else if (strcmp(comandos[0], "parallel") == 0) {
-                    executar_paralelo(comandos, lista_comandos);
+                    }else if (strcmp(comandos[0], "pipe") == 0) {
+                        executar_pipe(comandos, lista_comandos);
 
-                }else if (strcmp(comandos[0], "pipe") == 0) {
-                    executar_pipe(comandos, lista_comandos);
-
-                }else {
-                    pid_t pid = fork();
-                    if (pid < 0) {
-                        perror("fork failed");
-
-                    }else if (pid == 0) {
-                        Comando* temp = lista_comandos;
-                        while (temp != NULL) {
-                            if (strcmp(temp->nome, comandos[0]) == 0) {
-                                execvp(temp->args[0], temp->args);
-                                perror("program not found");
-                                exit(4);
-                            }
-                            temp = temp->next;
-                        }
-                        perror("invalid command");
-                        exit(2);
                     }else {
-                        token = NULL;
-                        int status;
+                        pid_t pid = fork();
+                        if (pid < 0) {
+                            perror("fork failed");
 
-                        waitpid(pid, &status, 0);
+                        }else if (pid == 0) {
+                            Comando* temp = lista_comandos;
+                            while (temp != NULL) {
+                                if (strcmp(temp->nome, comandos[0]) == 0) {
+                                    execvp(temp->args[0], temp->args);
+                                    perror("program not found");
+                                    exit(4);
+                                }
+                                temp = temp->next;
+                            }
+                            perror("invalid command");
+                            exit(2);
+                        }else {
+                            token = NULL;
+                            int status;
 
-                        if (WIFEXITED(status)){
-                            int codigo = WEXITSTATUS(status);
-                            printf("Task exited with code %d\n", codigo);
+                            waitpid(pid, &status, 0);
+
+                            if (WIFEXITED(status)){
+                                int codigo = WEXITSTATUS(status);
+                                printf("Task exited with code %d\n", codigo);
+                            }
                         }
                     }
+                }else if (strcmp(modo, "input") == 0) {
+                    if (cont < 2) {
+                        perror("invalid task");
+                        continue;
+                    }
+                    ler_input(comandos, lista_comandos);
+                }else if (strcmp(modo, "output") == 0) {
+                    if (cont < 2) {
+                        perror("invalid task");
+                        continue;
+                    }
+                    //escrever_output(comandos, lista_comandos);
+                }else if (strcmp(modo, "append") == 0) {
+                    if (cont < 2) {
+                        perror("invalid task");
+                        continue;
+                    }
+                    //append_output(comandos, lista_comandos);
                 }
             }
         }

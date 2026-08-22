@@ -7,6 +7,7 @@
 #include <unistd.h>
 #include <sys/types.h>
 #include <sys/wait.h>
+#include <fcntl.h>
 
 typedef struct Comando{
     char nome[20];
@@ -17,5 +18,8 @@ typedef struct Comando{
 void executar_paralelo(char** comandos, Comando* lista_comandos);
 void executar_sequencial(char** comandos, Comando* lista_comandos);
 void executar_pipe(char **comandos, Comando *lista_comandos);
+void ler_input(char **comandos, Comando *lista_comandos);
+void escrever_output(char **comandos, Comando *lista_comandos);
+void append_output(char **comandos, Comando *lista_comandos);
 
 #endif   
