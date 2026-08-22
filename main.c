@@ -85,6 +85,9 @@ int main(){
                 }else if (strcmp(comandos[0], "parallel") == 0) {
                     executar_paralelo(comandos, lista_comandos);
 
+                }else if (strcmp(comandos[0], "pipe") == 0) {
+                    executar_pipe(comandos, lista_comandos);
+
                 }else {
                     pid_t pid = fork();
                     if (pid < 0) {

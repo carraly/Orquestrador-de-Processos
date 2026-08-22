@@ -1,8 +1,4 @@
 #include "header.h"
-#include <stdlib.h>
-#include <sys/types.h>
-#include <sys/wait.h>
-#include <unistd.h>
 
 void executar_paralelo(char **comandos, Comando *lista_comandos){
     pid_t** lista_pids = (pid_t**) malloc(20 * sizeof(pid_t*));

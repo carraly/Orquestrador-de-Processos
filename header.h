@@ -16,5 +16,6 @@ typedef struct Comando{
 
 void executar_paralelo(char** comandos, Comando* lista_comandos);
 void executar_sequencial(char** comandos, Comando* lista_comandos);
+void executar_pipe(char **comandos, Comando *lista_comandos);
 
 #endif   
