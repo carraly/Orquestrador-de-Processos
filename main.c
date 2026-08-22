@@ -1,15 +1,4 @@
-#include <stdio.h>
-#include <stdlib.h>
-#include <string.h>
-#include <unistd.h>
-#include <sys/types.h>
-#include <sys/wait.h>
-
-typedef struct Comando{
-    char nome[20];
-    char** args; // Lembrar que arg[0] é o endereço
-    struct Comando *next;
-} Comando;
+#include "header.h"
 
 void adicionar_comando(Comando** lista, char nome[], char** args){
     if (*lista == NULL){
@@ -85,16 +74,16 @@ int main(){
 
                 if (cont < 1) {
                     perror("invalid task");
-                    exit(5);
+                    continue;
                 }
 
                 comandos[cont] = NULL;
 
                 if (strcmp(comandos[0], "sequential") == 0) {
-                    executar_sequencial(comandos);
+                    //executar_sequencial(comandos);
                     
                 }else if (strcmp(comandos[0], "parallel") == 0) {
-                    executar_paralelo(comandos);
+                    //executar_paralelo(comandos);
 
                 }else {
                     pid_t pid = fork();
