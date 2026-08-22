@@ -49,8 +49,8 @@ int main(){
                 }
 
                 if (cont < 2) {
-                        perror("invalid task");
-                        continue;
+                    perror("invalid task");
+                    continue;
                     }
 
                 args[cont-1] = NULL;
@@ -110,7 +110,7 @@ int main(){
 
                         if (WIFEXITED(status)){
                             int codigo = WEXITSTATUS(status);
-                            printf("Tarefa terminou com código %d\n", codigo);
+                            printf("Task exited with code %d\n", codigo);
                         }
                     }
                 }

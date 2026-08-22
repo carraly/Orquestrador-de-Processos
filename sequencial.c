@@ -2,8 +2,10 @@
 
 void executar_sequencial(char **comandos, Comando *lista_comandos) {
     int cont = 1; // Primeiro valor de comando é "sequential"
+
     while (comandos[cont] != NULL) {
         pid_t pid = fork();
+
         if (pid < 0) {
             perror("fork failed");
 
@@ -26,10 +28,14 @@ void executar_sequencial(char **comandos, Comando *lista_comandos) {
 
             if (WIFEXITED(status)){
                 int codigo = WEXITSTATUS(status);
-                printf("Tarefa terminou com código %d\n", codigo);
+                printf("Task exited with code %d\n", codigo);
             }
         }
 
         cont++;
+    }
+    if (cont < 2) {
+        perror("fewer commands than expected");
+        return;
     }
 }
