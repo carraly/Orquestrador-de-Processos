@@ -52,6 +52,7 @@ int main(){
 
                     cont++;
                 }
+                free(lista_pids);
 
                 Comando* temp;
                 
@@ -66,8 +67,6 @@ int main(){
                     free(temp->args);
                     free(temp);
                 }
-                
-                free(lista_pids);
 
                 break;
 

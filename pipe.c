@@ -1,4 +1,5 @@
 #include "header.h"
+#include <stdlib.h>
 
 void executar_pipe(char **comandos, Comando *lista_comandos){
     int cont = 0;
@@ -8,13 +9,16 @@ void executar_pipe(char **comandos, Comando *lista_comandos){
         cont++;
     }
 
-    cont--; // Descarta primeiro valor de comando que é "pipe"
+    cont--; // Descarta primeiro valor de comando, que é "pipe"
 
+    // Acabei de perceber que não foi a melhor ideia colocar fd no plural
     int** lista_fds = (int**) malloc(19 * sizeof(int*)); // Malloc menor que os outros pelo mesmo motivo abaixo
+    
     // Cont-1 já que é preciso um pipe a menos do que a quantidade total de comandos
     for (int i = 0; i < cont-1; i++) {
         lista_fds[i] = (int*) malloc(2 * sizeof(int));
         pipe(lista_fds[i]);
+        lista_fds[i+1] = NULL;
     }
 
     int amount_pipes = cont-1;
@@ -83,14 +87,23 @@ void executar_pipe(char **comandos, Comando *lista_comandos){
 
     while (lista_pids[cont] != NULL) {
         int status;
-
         waitpid(*(lista_pids[cont]), &status, 0);
 
         if (WIFEXITED(status)){
             int codigo = WEXITSTATUS(status);
             printf("Task exited with code %d\n", codigo);
         }
+        free(lista_pids[cont]);
+
         cont++;
     }
+
+    cont = 0;
+    while (lista_fds[cont] != NULL) {
+        free(lista_fds[cont]);
+        cont++;
+    }
+    free(lista_fds);
+
     printf("All forks finalized");
 }

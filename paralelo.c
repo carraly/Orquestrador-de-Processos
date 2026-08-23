@@ -39,13 +39,14 @@ void executar_paralelo(char **comandos, Comando *lista_comandos){
 
     while (lista_pids[cont] != NULL) {
         int status;
-
         waitpid(*(lista_pids[cont]), &status, 0);
 
         if (WIFEXITED(status)){
             int codigo = WEXITSTATUS(status);
             printf("Task exited with code %d\n", codigo);
         }
+        free(lista_pids[cont]);
+
         cont++;
     }
     printf("All forks finalized");
