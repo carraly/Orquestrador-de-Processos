@@ -1,4 +1,5 @@
 #include "header.h"
+#include <unistd.h>
 
 void adicionar_comando(Comando** lista, char nome[], char** args){
     if (*lista == NULL){
@@ -103,7 +104,7 @@ int main(){
                                 if (strcmp(temp->nome, comandos[0]) == 0) {
                                     execvp(temp->args[0], temp->args);
                                     perror("program not found");
-                                    exit(4);
+                                    exit(1);
                                 }
                                 temp = temp->next;
                             }
@@ -122,23 +123,35 @@ int main(){
                         }
                     }
                 }else if (strcmp(modo, "input") == 0) {
-                    if (cont < 2) {
+                    if (cont != 2) {
                         perror("invalid task");
                         continue;
                     }
                     ler_input(comandos, lista_comandos);
+
                 }else if (strcmp(modo, "output") == 0) {
-                    if (cont < 2) {
+                    if (cont != 2) {
                         perror("invalid task");
                         continue;
                     }
-                    //escrever_output(comandos, lista_comandos);
+                    escrever_output(comandos, lista_comandos);
+
                 }else if (strcmp(modo, "append") == 0) {
-                    if (cont < 2) {
+                    if (cont != 2) {
                         perror("invalid task");
                         continue;
                     }
-                    //append_output(comandos, lista_comandos);
+                    append_output(comandos, lista_comandos);
+
+                }else if (strcmp(modo, "workdir") == 0) {
+                    if (cont != 1) {
+                        perror("invalid task");
+                        continue;
+                    }
+                    if (chdir(comandos[0]) != 0) {
+                        perror("directory failed to open");
+                        continue;
+                    }
                 }
             }
         }
