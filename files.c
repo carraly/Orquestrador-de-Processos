@@ -1,6 +1,4 @@
 #include "header.h"
-#include <fcntl.h>
-#include <unistd.h>
 
 // comandos[0] comando
 // comandos[1] arquivo

@@ -1,9 +1,4 @@
 #include "header.h"
-#include <stdio.h>
-#include <stdlib.h>
-#include <sys/types.h>
-#include <sys/wait.h>
-#include <unistd.h>
 
 void adicionar_comando(Comando** lista, char nome[], char** args){
     if (*lista == NULL){
@@ -22,7 +17,20 @@ void adicionar_comando(Comando** lista, char nome[], char** args){
     (*lista)->next = NULL;
 }
 
-int main(){
+int main(int argc, char *argv[]){
+    FILE *file;
+    if (argc == 2) {
+        file = fopen(argv[1], "r");
+
+        if (file == NULL) {
+            perror("error opening workflow file");
+            exit(1);
+        }
+    }else if (argc != 1) {
+        perror("Too many arguments on calling processflow");
+        exit(1);
+    }
+
     Comando* lista_comandos = NULL;
     char input_comando[50] = "";
     char* token;
@@ -31,8 +39,32 @@ int main(){
     lista_pids[0] = NULL;
 
     while ((strcmp(input_comando, "exit") != 0)) {
-        printf("processflow> ");
-        fgets(input_comando, sizeof(input_comando), stdin);
+        if (argc == 1) {
+            printf("processflow> ");
+            if (fgets(input_comando, sizeof(input_comando), stdin) == NULL) {
+                if (feof(stdin)) {
+                    printf("Reached end of input");
+
+                }else {
+                    perror("Fail on reading from stdin");
+                }
+                strcpy(input_comando, "exit");
+            }
+
+        }else if (argc == 2) {
+            if (fgets(input_comando, sizeof(input_comando), file) != NULL) {
+                printf("%s", input_comando);
+                
+            }else {
+                if (feof(file)) {
+                    printf("Reached end of input");
+
+                }else {
+                    perror("Fail on reading from file");
+                }
+                strcpy(input_comando, "exit");
+            }
+        }
 
         token = strtok(input_comando, " \n");
 
@@ -66,6 +98,10 @@ int main(){
                     }
                     free(temp->args);
                     free(temp);
+                }
+
+                if (argc == 2) {
+                    fclose(file);    
                 }
 
                 break;

@@ -1,5 +1,4 @@
 #include "header.h"
-#include <stdlib.h>
 
 void executar_pipe(char **comandos, Comando *lista_comandos){
     int cont = 0;
