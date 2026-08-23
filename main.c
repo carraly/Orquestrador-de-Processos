@@ -1,4 +1,8 @@
 #include "header.h"
+#include <stdio.h>
+#include <stdlib.h>
+#include <sys/types.h>
+#include <sys/wait.h>
 #include <unistd.h>
 
 void adicionar_comando(Comando** lista, char nome[], char** args){
@@ -22,6 +26,10 @@ int main(){
     Comando* lista_comandos = NULL;
     char input_comando[50] = "";
     char* token;
+
+    pid_t** lista_pids = (pid_t**) malloc(20 * sizeof(pid_t*));
+    lista_pids[0] = NULL;
+
     while ((strcmp(input_comando, "exit") != 0)) {
         printf("processflow> ");
         fgets(input_comando, sizeof(input_comando), stdin);
@@ -30,6 +38,37 @@ int main(){
 
         while (token != NULL) {
             if (strcmp(token, "exit") == 0) {
+                int cont = 0;
+                while (lista_pids[cont] != NULL) {
+
+                    int status;
+                    waitpid(*lista_pids[cont], &status, 0);
+
+                    if (WIFEXITED(status)){
+                        int codigo = WEXITSTATUS(status);
+                        printf("Task exited with code %d\n", codigo);
+                    }
+                    free(lista_pids[cont]);
+
+                    cont++;
+                }
+
+                Comando* temp;
+                
+                cont = 0;
+                while (lista_comandos != NULL) {
+                    temp = lista_comandos;
+                    lista_comandos = lista_comandos->next;
+                    while (temp->args[cont] != NULL) {
+                        free(temp->args[cont]);
+                        cont++;
+                    }
+                    free(temp->args);
+                    free(temp);
+                }
+                
+                free(lista_pids);
+
                 break;
 
             }else if (strcmp(token, "task") == 0) {
@@ -77,13 +116,13 @@ int main(){
                     cont++;
                 }
 
-                if (cont < 1) {
-                    perror("invalid task");
-                    continue;
-                }
-
                 comandos[cont] = NULL;
                 if (strcmp(modo, "run") == 0) {
+                    if (cont < 1) {
+                        perror("invalid task");
+                        continue;
+                    }  
+
                     if (strcmp(comandos[0], "sequential") == 0) {
                         executar_sequencial(comandos, lista_comandos);
                         
@@ -111,6 +150,11 @@ int main(){
                             perror("invalid command");
                             exit(2);
                         }else {
+                            cont = 0;
+                            while (comandos[cont] != NULL) {
+                                free(comandos[cont]);
+                                cont++;
+                            }
                             token = NULL;
                             int status;
 
@@ -151,6 +195,106 @@ int main(){
                     if (chdir(comandos[0]) != 0) {
                         perror("directory failed to open");
                         continue;
+                    }
+                }else if (strcmp(modo, "start") == 0) {
+                    if (cont != 1) {
+                        perror("invalid task");
+                        continue;
+                    }
+
+                    cont = 0;
+
+                    while (lista_pids[cont] != NULL) {
+                        cont++;
+                    }
+
+                    if (cont > 19) {
+                        perror("max background processes reached");
+                        continue;
+                    }
+
+                    pid_t pid = fork();
+                    if (pid < 0) {
+                        perror("fork failed");
+
+                    }else if (pid == 0) {
+                        Comando* temp = lista_comandos;
+                        while (temp != NULL) {
+                            if (strcmp(temp->nome, comandos[0]) == 0) {
+                                execvp(temp->args[0], temp->args);
+                                perror("program not found");
+                                exit(1);
+                            }
+                            temp = temp->next;
+                        }
+                        perror("invalid command");
+                        exit(2);
+
+                    }else {
+                        token = NULL;
+                        pid_t** pids_temp = lista_pids;
+                        cont = 0;
+
+                        while (pids_temp[cont] != NULL) {
+                            cont++;
+                        }
+                        
+                        lista_pids[cont] = (pid_t*) malloc(sizeof(pid_t));
+                        *(lista_pids[cont]) = pid;
+                        lista_pids[cont+1] = NULL;
+
+                        printf("[%d] %d\n", cont+1, pid);
+                    }
+                }else if (strcmp(modo, "jobs") == 0) {
+                    if (cont != 0) {
+                        perror("invalid task");
+                        continue;
+                    }
+
+                    cont = 0;
+
+                    while (lista_pids[cont] != NULL) {
+                        printf("[%d] %d\n", cont+1, *(lista_pids[cont]));
+                        cont++;
+                    }
+                }else if (strcmp(modo, "wait") == 0) {
+                    if (cont != 1) {
+                        perror("invalid task");
+                        continue;
+                    }
+
+                    int job_id = atoi(comandos[0]);
+
+                    if (job_id < 1 || job_id > 20) {
+                        perror("Invalid job_id");
+                        continue;;
+                    }
+
+                    job_id--; // Para compensar o erro do valor mostrado ao usuário
+
+                    if (lista_pids[job_id] == NULL){
+                        perror("invalid pid");
+                        continue;
+                    }
+
+                    int status;
+
+                    waitpid(*lista_pids[job_id], &status, 0);
+                    
+                    cont = job_id;
+
+                    while (lista_pids[cont] != NULL) {
+                        if (lista_pids[cont+1] == NULL) {
+                            lista_pids[cont] = NULL;
+                        }else {
+                            *(lista_pids[cont]) = *(lista_pids[cont+1]);
+                            cont++; 
+                        }
+                    }
+
+                    if (WIFEXITED(status)){
+                        int codigo = WEXITSTATUS(status);
+                        printf("Task exited with code %d\n", codigo);
                     }
                 }
             }
