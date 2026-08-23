@@ -111,7 +111,7 @@ int main(int argc, char *argv[]){
                 char nome[20];
                 char **args = (char**) malloc(20 * sizeof(char*));
 
-                token = strtok(NULL, " ");
+                token = strtok(NULL, " \n");
                 // Agora sim descarta só o primeiro
 
                 while (token != NULL) {
@@ -121,12 +121,12 @@ int main(int argc, char *argv[]){
                         args[cont-1] = (char*) malloc(20 * sizeof(char));
                         strcpy(args[cont-1], token);
                     }
-                    token = strtok(NULL, " ");
+                    token = strtok(NULL, " \n");
                     cont++;
                 }
 
                 if (cont < 2) {
-                    perror("invalid task");
+                    printf("fewer commands than expected");
                     continue;
                     }
 
@@ -141,20 +141,20 @@ int main(int argc, char *argv[]){
                 int cont = 0;
                 char **comandos = (char**) malloc(20 * sizeof(char*));
 
-                token = strtok(NULL, " ");
+                token = strtok(NULL, " \n");
                 // Agora sim descarta só o primeiro
 
                 while (token != NULL) {
                     comandos[cont] = (char*) malloc(20 * sizeof(char));
                     strcpy(comandos[cont], token);
-                    token = strtok(NULL, " ");
+                    token = strtok(NULL, " \n");
                     cont++;
                 }
 
                 comandos[cont] = NULL;
                 if (strcmp(modo, "run") == 0) {
                     if (cont < 1) {
-                        perror("invalid task");
+                        printf("fewer commands than expected");
                         continue;
                     }  
 
@@ -182,7 +182,7 @@ int main(int argc, char *argv[]){
                                 }
                                 temp = temp->next;
                             }
-                            perror("invalid command");
+                            printf("invalid command");
                             exit(2);
                         }else {
                             cont = 0;
@@ -202,29 +202,41 @@ int main(int argc, char *argv[]){
                         }
                     }
                 }else if (strcmp(modo, "input") == 0) {
-                    if (cont != 2) {
-                        perror("invalid task");
+                    if (cont < 2) {
+                        printf("fewer commands than expected");
+                        continue;
+                    }else if (cont > 2) {
+                        printf("more commands than expected");
                         continue;
                     }
                     ler_input(comandos, lista_comandos);
 
                 }else if (strcmp(modo, "output") == 0) {
-                    if (cont != 2) {
-                        perror("invalid task");
+                    if (cont < 2) {
+                        printf("fewer commands than expected");
+                        continue;
+                    }else if (cont > 2) {
+                        printf("more commands than expected");
                         continue;
                     }
                     escrever_output(comandos, lista_comandos);
 
                 }else if (strcmp(modo, "append") == 0) {
-                    if (cont != 2) {
-                        perror("invalid task");
+                    if (cont < 2) {
+                        printf("fewer commands than expected");
+                        continue;
+                    }else if (cont > 2) {
+                        printf("more commands than expected");
                         continue;
                     }
                     append_output(comandos, lista_comandos);
 
                 }else if (strcmp(modo, "workdir") == 0) {
-                    if (cont != 1) {
-                        perror("invalid task");
+                    if (cont < 1) {
+                        printf("fewer commands than expected");
+                        continue;
+                    }else if (cont > 1) {
+                        printf("more commands than expected");
                         continue;
                     }
                     if (chdir(comandos[0]) != 0) {
@@ -232,8 +244,11 @@ int main(int argc, char *argv[]){
                         continue;
                     }
                 }else if (strcmp(modo, "start") == 0) {
-                    if (cont != 1) {
-                        perror("invalid task");
+                    if (cont < 1) {
+                        printf("fewer commands than expected");
+                        continue;
+                    }else if (cont > 1) {
+                        printf("more commands than expected");
                         continue;
                     }
 
@@ -262,7 +277,7 @@ int main(int argc, char *argv[]){
                             }
                             temp = temp->next;
                         }
-                        perror("invalid command");
+                        printf("invalid command");
                         exit(2);
 
                     }else {
@@ -331,6 +346,8 @@ int main(int argc, char *argv[]){
                         int codigo = WEXITSTATUS(status);
                         printf("Task exited with code %d\n", codigo);
                     }
+                }else {
+                    printf("command not found\n");
                 }
             }
         }

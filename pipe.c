@@ -23,7 +23,7 @@ void executar_pipe(char **comandos, Comando *lista_comandos){
     int amount_pipes = cont-1;
 
     if (amount_pipes < 1) {
-        perror("fewer commands than expected");
+        printf("fewer commands than expected");
         return;
     }
 
