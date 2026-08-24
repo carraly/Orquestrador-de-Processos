@@ -14,6 +14,7 @@ void executar_paralelo(char **comandos, Comando *lista_comandos){
             Comando* temp = lista_comandos;
             while (temp != NULL) {
                 if (strcmp(temp->nome, comandos[cont]) == 0) {
+                    aplicar_redirecionamentos(temp);
                     execvp(temp->args[0], temp->args);
                     perror("program not found");
                     _exit(4);
@@ -41,16 +42,9 @@ void executar_paralelo(char **comandos, Comando *lista_comandos){
     while (lista_pids[cont] != NULL) {
         int status;
         waitpid(*(lista_pids[cont]), &status, 0);
-
-        if (WIFEXITED(status)){
-            int codigo = WEXITSTATUS(status);
-            printf("task exited with code %d\n", codigo);
-        }
         free(lista_pids[cont]);
 
         cont++;
     }
     free(lista_pids);
-
-    printf("all forks finalized\n");
 }

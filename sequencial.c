@@ -13,6 +13,7 @@ void executar_sequencial(char **comandos, Comando *lista_comandos) {
             Comando* temp = lista_comandos;
             while (temp != NULL) {
                 if (strcmp(temp->nome, comandos[cont]) == 0) {
+                    aplicar_redirecionamentos(temp);
                     execvp(temp->args[0], temp->args);
                     perror("program not found");
                     _exit(4);
@@ -25,11 +26,6 @@ void executar_sequencial(char **comandos, Comando *lista_comandos) {
             int status;
 
             waitpid(pid, &status, 0);
-
-            if (WIFEXITED(status)){
-                int codigo = WEXITSTATUS(status);
-                printf("task exited with code %d\n", codigo);
-            }
         }
 
         cont++;

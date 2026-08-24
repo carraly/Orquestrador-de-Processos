@@ -12,6 +12,9 @@
 typedef struct Comando{
     char nome[50];
     char** args; // Lembrar que arg[0] é o endereço
+    char *input_file;
+    char *output_file;
+    int append; // 0 = truncate, 1 = append
     struct Comando *next;
 } Comando;
 
@@ -21,5 +24,6 @@ void executar_pipe(char **comandos, Comando *lista_comandos);
 void ler_input(char **comandos, Comando *lista_comandos);
 void escrever_output(char **comandos, Comando *lista_comandos);
 void append_output(char **comandos, Comando *lista_comandos);
+void aplicar_redirecionamentos(Comando *cmd);
 
 #endif   

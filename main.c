@@ -24,10 +24,14 @@ void adicionar_comando(Comando** lista, char nome[], char** args){
 
     strcpy(temp->nome, nome);
     temp->args = args;
+    temp->input_file = NULL;
+    temp->output_file = NULL;
+    temp->append = 0;
     temp->next = NULL;
 }
 
 int main(int argc, char *argv[]){
+    setbuf(stdout, NULL);
     FILE *file;
     if (argc == 2) {
         file = fopen(argv[1], "r");
@@ -50,7 +54,7 @@ int main(int argc, char *argv[]){
 
     while ((strcmp(input_comando, "exit") != 0)) {
         if (argc == 1) {
-            printf("processflow> ");
+            if (isatty(STDIN_FILENO)) printf("processflow> ");
             if (fgets(input_comando, sizeof(input_comando), stdin) == NULL) {
                 if (feof(stdin)) {
                     printf("reached end of input\n");
@@ -86,10 +90,6 @@ int main(int argc, char *argv[]){
                     int status;
                     waitpid(*lista_pids[cont], &status, 0);
 
-                    if (WIFEXITED(status)){
-                        int codigo = WEXITSTATUS(status);
-                        printf("task exited with code %d\n", codigo);
-                    }
                     free(lista_pids[cont]);
 
                     cont++;
@@ -107,6 +107,8 @@ int main(int argc, char *argv[]){
                         cont++;
                     }
                     free(temp->args);
+                    free(temp->input_file);
+                    free(temp->output_file);
                     free(temp);
                 }
 
@@ -238,6 +240,7 @@ int main(int argc, char *argv[]){
                             Comando* temp = lista_comandos;
                             while (temp != NULL) {
                                 if (strcmp(temp->nome, comandos[0]) == 0) {
+                                    aplicar_redirecionamentos(temp);
                                     execvp(temp->args[0], temp->args);
                                     printf("program not found\n");
                                     _exit(1);
@@ -258,11 +261,6 @@ int main(int argc, char *argv[]){
                             int status;
 
                             waitpid(pid, &status, 0);
-
-                            if (WIFEXITED(status)){
-                                int codigo = WEXITSTATUS(status);
-                                printf("task exited with code %d\n", codigo);
-                            }
                         }
                     }
                 }else if (strcmp(modo, "input") == 0) {
@@ -363,6 +361,7 @@ int main(int argc, char *argv[]){
                         Comando* temp = lista_comandos;
                         while (temp != NULL) {
                             if (strcmp(temp->nome, comandos[0]) == 0) {
+                                aplicar_redirecionamentos(temp);
                                 execvp(temp->args[0], temp->args);
                                 printf("program not found\n");
                                 _exit(1);
@@ -439,11 +438,6 @@ int main(int argc, char *argv[]){
                             *(lista_pids[cont]) = *(lista_pids[cont+1]);
                             cont++; 
                         }
-                    }
-
-                    if (WIFEXITED(status)){
-                        int codigo = WEXITSTATUS(status);
-                        printf("task exited with code %d\n", codigo);
                     }
 
                     limpar_comandos(comandos);
