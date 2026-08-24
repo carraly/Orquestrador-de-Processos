@@ -10,7 +10,7 @@
 #include <fcntl.h>
 
 typedef struct Comando{
-    char nome[20];
+    char nome[50];
     char** args; // Lembrar que arg[0] é o endereço
     struct Comando *next;
 } Comando;

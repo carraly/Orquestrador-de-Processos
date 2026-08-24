@@ -1,5 +1,4 @@
 #include "header.h"
-#include <stdio.h>
 
 // comandos[0] comando
 // comandos[1] arquivo
@@ -14,7 +13,7 @@ void ler_input(char **comandos, Comando *lista_comandos) {
 
         if (file == -1) {
             perror("error opening file");
-            exit(1);
+            _exit(1);
         }
 
         dup2(file, STDIN_FILENO);
@@ -26,12 +25,12 @@ void ler_input(char **comandos, Comando *lista_comandos) {
             if (strcmp(temp->nome, comandos[0]) == 0) {
                 execvp(temp->args[0], temp->args);
                 perror("program not found");
-                exit(1);
+                _exit(1);
             }
             temp = temp->next;
         }
-        printf("invalid command");
-        exit(1);
+        printf("invalid command\n");
+        _exit(1);
     }else {
         int status;
 
@@ -39,7 +38,7 @@ void ler_input(char **comandos, Comando *lista_comandos) {
 
         if (WIFEXITED(status)){
             int codigo = WEXITSTATUS(status);
-            printf("Task exited with code %d\n", codigo);
+            printf("task exited with code %d\n", codigo);
         }
     }
 }
@@ -54,7 +53,7 @@ void escrever_output(char **comandos, Comando *lista_comandos) {
 
         if (file == -1) {
             perror("error opening file");
-            exit(1);
+            _exit(1);
         }
 
         dup2(file, STDOUT_FILENO);
@@ -66,12 +65,12 @@ void escrever_output(char **comandos, Comando *lista_comandos) {
             if (strcmp(temp->nome, comandos[0]) == 0) {
                 execvp(temp->args[0], temp->args);
                 perror("program not found");
-                exit(1);
+                _exit(1);
             }
             temp = temp->next;
         }
-        printf("invalid command");
-        exit(1);
+        printf("invalid command\n");
+        _exit(1);
     }else {
         int status;
 
@@ -79,7 +78,7 @@ void escrever_output(char **comandos, Comando *lista_comandos) {
 
         if (WIFEXITED(status)){
             int codigo = WEXITSTATUS(status);
-            printf("Task exited with code %d\n", codigo);
+            printf("task exited with code %d\n", codigo);
         }
     }
 }
@@ -94,7 +93,7 @@ void append_output(char **comandos, Comando *lista_comandos) {
 
         if (file == -1) {
             perror("error opening file");
-            exit(1);
+            _exit(1);
         }
 
         dup2(file, STDOUT_FILENO);
@@ -106,12 +105,12 @@ void append_output(char **comandos, Comando *lista_comandos) {
             if (strcmp(temp->nome, comandos[0]) == 0) {
                 execvp(temp->args[0], temp->args);
                 perror("program not found");
-                exit(1);
+                _exit(1);
             }
             temp = temp->next;
         }
-        printf("invalid command");
-        exit(1);
+        printf("invalid command\n");
+        _exit(1);
     }else {
         int status;
 
@@ -119,7 +118,7 @@ void append_output(char **comandos, Comando *lista_comandos) {
 
         if (WIFEXITED(status)){
             int codigo = WEXITSTATUS(status);
-            printf("Task exited with code %d\n", codigo);
+            printf("task exited with code %d\n", codigo);
         }
     }
 }

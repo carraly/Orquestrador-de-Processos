@@ -1,5 +1,4 @@
 #include "header.h"
-#include <stdio.h>
 
 void executar_pipe(char **comandos, Comando *lista_comandos){
     int cont = 0;
@@ -12,7 +11,7 @@ void executar_pipe(char **comandos, Comando *lista_comandos){
     cont--; // Descarta primeiro valor de comando, que é "pipe"
 
     // Acabei de perceber que não foi a melhor ideia colocar fd no plural
-    int** lista_fds = (int**) malloc(19 * sizeof(int*)); // Malloc menor que os outros pelo mesmo motivo abaixo
+    int** lista_fds = (int**) malloc(20 * sizeof(int*));
     
     // Cont-1 já que é preciso um pipe a menos do que a quantidade total de comandos
     for (int i = 0; i < cont-1; i++) {
@@ -24,7 +23,8 @@ void executar_pipe(char **comandos, Comando *lista_comandos){
     int amount_pipes = cont-1;
 
     if (amount_pipes < 1) {
-        printf("fewer commands than expected");
+        printf("fewer commands than expected\n");
+        free(lista_fds);
         return;
     }
 
@@ -64,12 +64,12 @@ void executar_pipe(char **comandos, Comando *lista_comandos){
                 if (strcmp(temp->nome, comandos[cont]) == 0) {
                     execvp(temp->args[0], temp->args);
                     perror("program not found");
-                    exit(1);
+                    _exit(1);
                 }
                 temp = temp->next;
             }
-            printf("invalid command");
-            exit(2);
+            printf("invalid command\n");
+            _exit(2);
         }else {
             lista_pids[cont-1] = (pid_t*) malloc(sizeof(pid_t));
             *(lista_pids[cont-1]) = pid;
@@ -91,7 +91,7 @@ void executar_pipe(char **comandos, Comando *lista_comandos){
 
         if (WIFEXITED(status)){
             int codigo = WEXITSTATUS(status);
-            printf("Task exited with code %d\n", codigo);
+            printf("task exited with code %d\n", codigo);
         }
         free(lista_pids[cont]);
 
@@ -105,5 +105,5 @@ void executar_pipe(char **comandos, Comando *lista_comandos){
     }
     free(lista_fds);
 
-    printf("All forks finalized");
+    printf("all forks finalized\n");
 }

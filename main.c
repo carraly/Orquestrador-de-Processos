@@ -1,22 +1,30 @@
 #include "header.h"
-#include <stdio.h>
+
+void limpar_comandos(char** comandos){
+    int cont = 0;
+    while (comandos[cont] != NULL) {
+        free(comandos[cont]);
+        cont++;
+    }
+    free(comandos);
+}
 
 void adicionar_comando(Comando** lista, char nome[], char** args){
-    Comando** temp = lista;
-    if (*temp == NULL){
-        (*temp) = (Comando*) malloc(sizeof(Comando));
-    }else {
-        while ((*temp)->next != NULL) {
-            (*temp) = (*temp)->next;
+    Comando* temp = *lista;
+    if (temp == NULL){
+        temp = (Comando*) malloc(sizeof(Comando));
+        *lista = temp;
+    } else {
+        while (temp->next != NULL) {
+            temp = temp->next;
         }
-
-        (*temp)->next = (Comando*) malloc(sizeof(Comando));
-        (*temp) = (*temp)->next;
+        temp->next = (Comando*) malloc(sizeof(Comando));
+        temp = temp->next;
     }
 
-    strcpy((*temp)->nome, nome);
-    (*temp)->args = args;
-    (*temp)->next = NULL;
+    strcpy(temp->nome, nome);
+    temp->args = args;
+    temp->next = NULL;
 }
 
 int main(int argc, char *argv[]){
@@ -29,15 +37,15 @@ int main(int argc, char *argv[]){
             exit(1);
         }
     }else if (argc != 1) {
-        printf("Too many arguments on calling processflow");
+        printf("too many arguments on calling processflow\n");
         exit(1);
     }
 
     Comando* lista_comandos = NULL;
-    char input_comando[50] = "";
+    char input_comando[200] = "";
     char* token;
 
-    pid_t** lista_pids = (pid_t**) malloc(20 * sizeof(pid_t*));
+    pid_t** lista_pids = (pid_t**) malloc(21 * sizeof(pid_t*));
     lista_pids[0] = NULL;
 
     while ((strcmp(input_comando, "exit") != 0)) {
@@ -45,10 +53,10 @@ int main(int argc, char *argv[]){
             printf("processflow> ");
             if (fgets(input_comando, sizeof(input_comando), stdin) == NULL) {
                 if (feof(stdin)) {
-                    printf("Reached end of input");
+                    printf("reached end of input\n");
 
                 }else {
-                    perror("Fail on reading from stdin");
+                    perror("fail on reading from stdin");
                 }
                 strcpy(input_comando, "exit");
             }
@@ -59,10 +67,10 @@ int main(int argc, char *argv[]){
                 
             }else {
                 if (feof(file)) {
-                    printf("Reached end of input");
+                    printf("reached end of input\n");
 
                 }else {
-                    perror("Fail on reading from file");
+                    perror("fail on reading from file");
                 }
                 strcpy(input_comando, "exit");
             }
@@ -80,7 +88,7 @@ int main(int argc, char *argv[]){
 
                     if (WIFEXITED(status)){
                         int codigo = WEXITSTATUS(status);
-                        printf("Task exited with code %d\n", codigo);
+                        printf("task exited with code %d\n", codigo);
                     }
                     free(lista_pids[cont]);
 
@@ -90,10 +98,10 @@ int main(int argc, char *argv[]){
 
                 Comando* temp;
                 
-                cont = 0;
                 while (lista_comandos != NULL) {
                     temp = lista_comandos;
                     lista_comandos = lista_comandos->next;
+                    cont = 0;
                     while (temp->args[cont] != NULL) {
                         free(temp->args[cont]);
                         cont++;
@@ -110,17 +118,32 @@ int main(int argc, char *argv[]){
 
             }else if (strcmp(token, "task") == 0) {
                 int cont = 0;
-                char nome[20];
-                char **args = (char**) malloc(20 * sizeof(char*));
+                char nome[50];
+                char **args = (char**) malloc(21 * sizeof(char*));
 
                 token = strtok(NULL, " \n");
                 // Agora sim descarta só o primeiro
 
                 while (token != NULL) {
                     if (cont == 0){
+                        if (strlen(token) >= 50) {
+                            printf("command name is longer than expected\n");
+                            token = NULL;
+                            continue;
+                        }
                         strcpy(nome, token);
                     }else{
-                        args[cont-1] = (char*) malloc(20 * sizeof(char));
+                        if (strlen(token) >= 200) {
+                            printf("command file/argument is longer than expected\n");
+                            token = NULL;
+                            continue;
+                        }
+                        if (cont >= 20) {
+                            printf("more arguments than expected\n");
+                            token = NULL;
+                            continue;
+                        }
+                        args[cont-1] = (char*) malloc(200 * sizeof(char));
                         strcpy(args[cont-1], token);
                     }
                     token = strtok(NULL, " \n");
@@ -128,7 +151,14 @@ int main(int argc, char *argv[]){
                 }
 
                 if (cont < 2) {
-                    printf("fewer commands than expected");
+                    printf("fewer commands than expected\n");
+                    cont = 0;
+                    while (args[cont] != NULL) {
+                        free(args[cont]);
+                        cont++;
+                    }
+                    free(args);
+
                     continue;
                     }
 
@@ -137,17 +167,34 @@ int main(int argc, char *argv[]){
                 adicionar_comando(&lista_comandos, nome, args);
 
             }else {
-                char modo[20];
+                char modo[50];
+                if (strlen(token) >= 50) {
+                    printf("command mode is longer than expected\n");
+                    token = NULL;
+                    continue;
+                }
                 strcpy(modo, token);
                 
                 int cont = 0;
-                char **comandos = (char**) malloc(20 * sizeof(char*));
+                char **comandos = (char**) malloc(21 * sizeof(char*));
 
                 token = strtok(NULL, " \n");
                 // Agora sim descarta só o primeiro
 
                 while (token != NULL) {
-                    comandos[cont] = (char*) malloc(20 * sizeof(char));
+                    if (cont >= 20) {
+                        printf("more arguments than expected\n");
+                        token = NULL;
+                        continue;
+                    }
+                    if (strlen(token) >= 200) {
+                        printf("command file/argument is longer than expected\n");
+                        token = NULL;
+                        continue;
+                    }
+
+                    comandos[cont] = (char*) malloc(200 * sizeof(char));
+
                     strcpy(comandos[cont], token);
                     token = strtok(NULL, " \n");
                     cont++;
@@ -156,20 +203,33 @@ int main(int argc, char *argv[]){
                 comandos[cont] = NULL;
                 if (strcmp(modo, "run") == 0) {
                     if (cont < 1) {
-                        printf("fewer commands than expected");
+                        printf("fewer commands than expected\n");
+                        token = NULL;
                         continue;
                     }  
 
                     if (strcmp(comandos[0], "sequential") == 0) {
                         executar_sequencial(comandos, lista_comandos);
                         
+                        limpar_comandos(comandos);
+
                     }else if (strcmp(comandos[0], "parallel") == 0) {
                         executar_paralelo(comandos, lista_comandos);
 
+                        limpar_comandos(comandos);
+                        
                     }else if (strcmp(comandos[0], "pipe") == 0) {
                         executar_pipe(comandos, lista_comandos);
 
+                        limpar_comandos(comandos);
+                        
                     }else {
+                        if (cont > 1) {
+                            printf("more arguments than expected\n");
+                            token = NULL;
+                            continue;
+                        }  
+
                         pid_t pid = fork();
                         if (pid < 0) {
                             perror("fork failed");
@@ -179,19 +239,21 @@ int main(int argc, char *argv[]){
                             while (temp != NULL) {
                                 if (strcmp(temp->nome, comandos[0]) == 0) {
                                     execvp(temp->args[0], temp->args);
-                                    printf("program not found");
-                                    exit(1);
+                                    printf("program not found\n");
+                                    _exit(1);
                                 }
                                 temp = temp->next;
                             }
-                            printf("invalid command");
-                            exit(2);
+                            printf("invalid command\n");
+                            _exit(2);
                         }else {
                             cont = 0;
                             while (comandos[cont] != NULL) {
                                 free(comandos[cont]);
                                 cont++;
                             }
+                            free(comandos);
+                            
                             token = NULL;
                             int status;
 
@@ -199,58 +261,84 @@ int main(int argc, char *argv[]){
 
                             if (WIFEXITED(status)){
                                 int codigo = WEXITSTATUS(status);
-                                printf("Task exited with code %d\n", codigo);
+                                printf("task exited with code %d\n", codigo);
                             }
                         }
                     }
                 }else if (strcmp(modo, "input") == 0) {
                     if (cont < 2) {
-                        printf("fewer commands than expected");
+                        printf("fewer commands than expected\n");
+                        token = NULL;
                         continue;
                     }else if (cont > 2) {
-                        printf("more commands than expected");
+                        printf("more commands than expected\n");
+                        token = NULL;
                         continue;
                     }
                     ler_input(comandos, lista_comandos);
 
+                    limpar_comandos(comandos);
+
                 }else if (strcmp(modo, "output") == 0) {
                     if (cont < 2) {
-                        printf("fewer commands than expected");
+                        printf("fewer commands than expected\n");
+                        token = NULL;
                         continue;
                     }else if (cont > 2) {
-                        printf("more commands than expected");
+                        printf("more commands than expected\n");
+                        token = NULL;
                         continue;
                     }
                     escrever_output(comandos, lista_comandos);
 
+                    limpar_comandos(comandos);
+
                 }else if (strcmp(modo, "append") == 0) {
                     if (cont < 2) {
-                        printf("fewer commands than expected");
+                        printf("fewer commands than expected\n");
+                        token = NULL;
                         continue;
                     }else if (cont > 2) {
-                        printf("more commands than expected");
+                        printf("more commands than expected\n");
+                        token = NULL;
                         continue;
                     }
                     append_output(comandos, lista_comandos);
 
+                    limpar_comandos(comandos);
+
                 }else if (strcmp(modo, "workdir") == 0) {
                     if (cont < 1) {
-                        printf("fewer commands than expected");
+                        printf("fewer commands than expected\n");
+                        token = NULL;
+                        limpar_comandos(comandos);
                         continue;
+
                     }else if (cont > 1) {
-                        printf("more commands than expected");
+                        printf("more commands than expected\n");
+                        token = NULL;
+                        limpar_comandos(comandos);
                         continue;
                     }
                     if (chdir(comandos[0]) != 0) {
                         perror("directory failed to open");
+                        token = NULL;
+                        limpar_comandos(comandos);
                         continue;
                     }
+
+                    limpar_comandos(comandos);
+                
                 }else if (strcmp(modo, "start") == 0) {
                     if (cont < 1) {
-                        printf("fewer commands than expected");
+                        printf("fewer commands than expected\n");
+                        token = NULL;
+                        limpar_comandos(comandos);
                         continue;
                     }else if (cont > 1) {
-                        printf("more commands than expected");
+                        printf("more commands than expected\n");
+                        token = NULL;
+                        limpar_comandos(comandos);
                         continue;
                     }
 
@@ -261,7 +349,9 @@ int main(int argc, char *argv[]){
                     }
 
                     if (cont > 19) {
-                        printf("max background processes reached");
+                        printf("max background processes reached\n");
+                        token = NULL;
+                        limpar_comandos(comandos);
                         continue;
                     }
 
@@ -274,32 +364,29 @@ int main(int argc, char *argv[]){
                         while (temp != NULL) {
                             if (strcmp(temp->nome, comandos[0]) == 0) {
                                 execvp(temp->args[0], temp->args);
-                                printf("program not found");
-                                exit(1);
+                                printf("program not found\n");
+                                _exit(1);
                             }
                             temp = temp->next;
                         }
-                        printf("invalid command");
-                        exit(2);
+                        printf("invalid command\n");
+                        _exit(2);
 
                     }else {
                         token = NULL;
-                        pid_t** pids_temp = lista_pids;
-                        cont = 0;
-
-                        while (pids_temp[cont] != NULL) {
-                            cont++;
-                        }
-                        
                         lista_pids[cont] = (pid_t*) malloc(sizeof(pid_t));
                         *(lista_pids[cont]) = pid;
                         lista_pids[cont+1] = NULL;
 
                         printf("[%d] %d\n", cont+1, pid);
+
+                        limpar_comandos(comandos);
                     }
                 }else if (strcmp(modo, "jobs") == 0) {
                     if (cont != 0) {
-                        printf("invalid task");
+                        printf("invalid task\n");
+                        token = NULL;
+                        limpar_comandos(comandos);
                         continue;
                     }
 
@@ -309,23 +396,32 @@ int main(int argc, char *argv[]){
                         printf("[%d] %d\n", cont+1, *(lista_pids[cont]));
                         cont++;
                     }
+
+                    limpar_comandos(comandos);
+
                 }else if (strcmp(modo, "wait") == 0) {
                     if (cont != 1) {
-                        printf("invalid task");
+                        printf("invalid task\n");
+                        token = NULL;
+                        limpar_comandos(comandos);
                         continue;
                     }
 
                     int job_id = atoi(comandos[0]);
 
                     if (job_id < 1 || job_id > 20) {
-                        printf("Invalid job_id");
+                        printf("invalid job_id\n");
+                        token = NULL;
+                        limpar_comandos(comandos);
                         continue;;
                     }
 
                     job_id--; // Para compensar o erro do valor mostrado ao usuário
 
                     if (lista_pids[job_id] == NULL){
-                        printf("invalid pid");
+                        printf("invalid pid\n");
+                        token = NULL;
+                        limpar_comandos(comandos);
                         continue;
                     }
 
@@ -337,6 +433,7 @@ int main(int argc, char *argv[]){
 
                     while (lista_pids[cont] != NULL) {
                         if (lista_pids[cont+1] == NULL) {
+                            free(lista_pids[cont]);
                             lista_pids[cont] = NULL;
                         }else {
                             *(lista_pids[cont]) = *(lista_pids[cont+1]);
@@ -346,8 +443,11 @@ int main(int argc, char *argv[]){
 
                     if (WIFEXITED(status)){
                         int codigo = WEXITSTATUS(status);
-                        printf("Task exited with code %d\n", codigo);
+                        printf("task exited with code %d\n", codigo);
                     }
+
+                    limpar_comandos(comandos);
+
                 }else {
                     printf("command not found\n");
                 }

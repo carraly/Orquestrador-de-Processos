@@ -1,5 +1,4 @@
 #include "header.h"
-#include <stdio.h>
 
 void executar_sequencial(char **comandos, Comando *lista_comandos) {
     int cont = 1; // Primeiro valor de comando é "sequential"
@@ -16,12 +15,12 @@ void executar_sequencial(char **comandos, Comando *lista_comandos) {
                 if (strcmp(temp->nome, comandos[cont]) == 0) {
                     execvp(temp->args[0], temp->args);
                     perror("program not found");
-                    exit(4);
+                    _exit(4);
                 }
                 temp = temp->next;
             }
-            printf("invalid command");
-            exit(2);
+            printf("invalid command\n");
+            _exit(2);
         }else {
             int status;
 
@@ -29,14 +28,14 @@ void executar_sequencial(char **comandos, Comando *lista_comandos) {
 
             if (WIFEXITED(status)){
                 int codigo = WEXITSTATUS(status);
-                printf("Task exited with code %d\n", codigo);
+                printf("task exited with code %d\n", codigo);
             }
         }
 
         cont++;
     }
     if (cont < 2) {
-        printf("fewer commands than expected");
+        printf("fewer commands than expected\n");
         return;
     }
 }
