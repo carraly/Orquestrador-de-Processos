@@ -1,4 +1,5 @@
 #include "header.h"
+#include <stdio.h>
 
 void executar_sequencial(char **comandos, Comando *lista_comandos) {
     int cont = 1; // Primeiro valor de comando é "sequential"
@@ -19,7 +20,7 @@ void executar_sequencial(char **comandos, Comando *lista_comandos) {
                 }
                 temp = temp->next;
             }
-            perror("invalid command");
+            printf("invalid command");
             exit(2);
         }else {
             int status;
@@ -35,7 +36,7 @@ void executar_sequencial(char **comandos, Comando *lista_comandos) {
         cont++;
     }
     if (cont < 2) {
-        perror("fewer commands than expected");
+        printf("fewer commands than expected");
         return;
     }
 }

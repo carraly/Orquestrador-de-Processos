@@ -1,4 +1,5 @@
 #include "header.h"
+#include <stdio.h>
 
 // comandos[0] comando
 // comandos[1] arquivo
@@ -29,7 +30,7 @@ void ler_input(char **comandos, Comando *lista_comandos) {
             }
             temp = temp->next;
         }
-        perror("invalid command");
+        printf("invalid command");
         exit(1);
     }else {
         int status;
@@ -69,7 +70,7 @@ void escrever_output(char **comandos, Comando *lista_comandos) {
             }
             temp = temp->next;
         }
-        perror("invalid command");
+        printf("invalid command");
         exit(1);
     }else {
         int status;
@@ -109,7 +110,7 @@ void append_output(char **comandos, Comando *lista_comandos) {
             }
             temp = temp->next;
         }
-        perror("invalid command");
+        printf("invalid command");
         exit(1);
     }else {
         int status;

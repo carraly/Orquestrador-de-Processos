@@ -1,4 +1,5 @@
 #include "header.h"
+#include <stdio.h>
 
 void executar_pipe(char **comandos, Comando *lista_comandos){
     int cont = 0;
@@ -67,7 +68,7 @@ void executar_pipe(char **comandos, Comando *lista_comandos){
                 }
                 temp = temp->next;
             }
-            perror("invalid command");
+            printf("invalid command");
             exit(2);
         }else {
             lista_pids[cont-1] = (pid_t*) malloc(sizeof(pid_t));

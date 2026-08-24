@@ -1,20 +1,22 @@
 #include "header.h"
+#include <stdio.h>
 
 void adicionar_comando(Comando** lista, char nome[], char** args){
-    if (*lista == NULL){
-        (*lista) = (Comando*) malloc(sizeof(Comando));
+    Comando** temp = lista;
+    if (*temp == NULL){
+        (*temp) = (Comando*) malloc(sizeof(Comando));
     }else {
-        while ((*lista)->next != NULL) {
-            (*lista) = (*lista)->next;
+        while ((*temp)->next != NULL) {
+            (*temp) = (*temp)->next;
         }
 
-        (*lista)->next = (Comando*) malloc(sizeof(Comando));
-        (*lista) = (*lista)->next;
+        (*temp)->next = (Comando*) malloc(sizeof(Comando));
+        (*temp) = (*temp)->next;
     }
 
-    strcpy((*lista)->nome, nome);
-    (*lista)->args = args;
-    (*lista)->next = NULL;
+    strcpy((*temp)->nome, nome);
+    (*temp)->args = args;
+    (*temp)->next = NULL;
 }
 
 int main(int argc, char *argv[]){
@@ -27,7 +29,7 @@ int main(int argc, char *argv[]){
             exit(1);
         }
     }else if (argc != 1) {
-        perror("Too many arguments on calling processflow");
+        printf("Too many arguments on calling processflow");
         exit(1);
     }
 
@@ -177,7 +179,7 @@ int main(int argc, char *argv[]){
                             while (temp != NULL) {
                                 if (strcmp(temp->nome, comandos[0]) == 0) {
                                     execvp(temp->args[0], temp->args);
-                                    perror("program not found");
+                                    printf("program not found");
                                     exit(1);
                                 }
                                 temp = temp->next;
@@ -259,7 +261,7 @@ int main(int argc, char *argv[]){
                     }
 
                     if (cont > 19) {
-                        perror("max background processes reached");
+                        printf("max background processes reached");
                         continue;
                     }
 
@@ -272,7 +274,7 @@ int main(int argc, char *argv[]){
                         while (temp != NULL) {
                             if (strcmp(temp->nome, comandos[0]) == 0) {
                                 execvp(temp->args[0], temp->args);
-                                perror("program not found");
+                                printf("program not found");
                                 exit(1);
                             }
                             temp = temp->next;
@@ -297,7 +299,7 @@ int main(int argc, char *argv[]){
                     }
                 }else if (strcmp(modo, "jobs") == 0) {
                     if (cont != 0) {
-                        perror("invalid task");
+                        printf("invalid task");
                         continue;
                     }
 
@@ -309,21 +311,21 @@ int main(int argc, char *argv[]){
                     }
                 }else if (strcmp(modo, "wait") == 0) {
                     if (cont != 1) {
-                        perror("invalid task");
+                        printf("invalid task");
                         continue;
                     }
 
                     int job_id = atoi(comandos[0]);
 
                     if (job_id < 1 || job_id > 20) {
-                        perror("Invalid job_id");
+                        printf("Invalid job_id");
                         continue;;
                     }
 
                     job_id--; // Para compensar o erro do valor mostrado ao usuário
 
                     if (lista_pids[job_id] == NULL){
-                        perror("invalid pid");
+                        printf("invalid pid");
                         continue;
                     }
 

@@ -1,4 +1,5 @@
 #include "header.h"
+#include <stdio.h>
 
 void executar_paralelo(char **comandos, Comando *lista_comandos){
     pid_t** lista_pids = (pid_t**) malloc(20 * sizeof(pid_t*));
@@ -20,7 +21,7 @@ void executar_paralelo(char **comandos, Comando *lista_comandos){
                 }
                 temp = temp->next;
             }
-            perror("invalid command");
+            printf("invalid command");
             exit(2);
         }else {
             lista_pids[cont-1] = (pid_t*) malloc(sizeof(pid_t));
@@ -30,7 +31,7 @@ void executar_paralelo(char **comandos, Comando *lista_comandos){
     }
 
     if (cont < 2) {
-        perror("fewer commands than expected");
+        printf("fewer commands than expected");
         return;
     }
 
